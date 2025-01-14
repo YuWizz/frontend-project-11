@@ -2,7 +2,6 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 
 export default {
   mode: process.env.NODE_ENV || 'development',
-  entry: './src/index.js',
   module: {
     rules: [
       {
@@ -36,8 +35,6 @@ export default {
     }),
   ],
   output: {
-    path: './dist',
-    filename: 'main.js',
     clean: true,
   },
 };
