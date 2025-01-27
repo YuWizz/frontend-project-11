@@ -1,20 +1,17 @@
 import onChange from 'on-change';
 
-export default (state, elements) => {
-  const { input, feedback, form } = elements;
+export const initView = (state, elements) => {
+  const { form, input, feedback } = elements;
 
   return onChange(state, (path, value) => {
-    if (path === 'form.valid') {
-      if (value) {
-        input.classList.remove('is-invalid');
-        feedback.textContent = '';
-      } else {
-        input.classList.add('is-invalid');
-        feedback.textContent = state.form.errorMessage;
-      }
+    if (path === 'form.error') {
+      input.classList.toggle('is-invalid', !!value);
+      feedback.textContent = value || '';
     }
 
-    if (path === 'feeds') {
+    if (path === 'form.status' && value === 'success') {
+      input.classList.remove('is-invalid');
+      feedback.textContent = '';
       form.reset();
       input.focus();
     }
