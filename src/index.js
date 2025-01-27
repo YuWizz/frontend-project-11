@@ -36,7 +36,7 @@ export default () => {
 
     try {
       await validate(url);
-      state.feeds.push(url); // Добавляем URL в список
+      state.feeds.push(url);
       watchedState.form.status = 'success';
     } catch (error) {
       watchedState.form.status = 'failed';
