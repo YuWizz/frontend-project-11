@@ -2,8 +2,27 @@ import './styles.scss';
 import  'bootstrap';
 import { createValidationSchema } from './validation.js';
 import { initView } from './view.js';
+import i18next from './i18n.js';
 
-export default () => {
+export default async () => {
+  await i18next.init({
+    lng: 'ru',
+    debug: false,
+    resources: {
+      ru: {
+        translation: {
+          form: {
+            feedback: {
+              success: 'RSS успешно добавлен',
+              duplicate: 'Этот RSS уже существует',
+              invalid: 'URL недействителен',
+            },
+          },
+        },
+      },
+    },
+  });
+
   const state = {
     form: {
       status: null,
@@ -18,7 +37,7 @@ export default () => {
     feedback: document.querySelector('#feedback'),
   };
 
-  const watchedState = initView(state, elements);
+  const watchedState = initView(state, elements, i18next);
 
   const validate = async (url) => {
     const schema = createValidationSchema(state.feeds);
@@ -40,7 +59,7 @@ export default () => {
       watchedState.form.status = 'success';
     } catch (error) {
       watchedState.form.status = 'failed';
-      watchedState.form.error = error.message;
+      watchedState.form.error = error.type;
     }
   });
 };

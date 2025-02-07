@@ -32,6 +32,9 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
+    "i18next": "^24.2.2",
+    "i18next-browser-languagedetector": "^8.0.2",
+    "i18next-http-backend": "^3.0.2",
     "on-change": "^5.0.1",
     "yup": "^1.6.1"
   }
