@@ -1,19 +1,23 @@
 import onChange from 'on-change';
+import i18next from './locales/localization.js';
 
-export const initView = (state, elements) => {
-  const { form, input, feedback } = elements;
-
+export default function initView(state) {
   return onChange(state, (path, value) => {
     if (path === 'form.error') {
-      input.classList.toggle('is-invalid', !!value);
-      feedback.textContent = value || '';
+      const input = document.querySelector('.rss-input');
+      const errorMessage = document.querySelector('.error-message');
+
+      if (value) {
+        input.classList.add('input-error');
+        errorMessage.textContent = i18next.t(value);
+      } else {
+        input.classList.remove('input-error');
+        errorMessage.textContent = '';
+      }
     }
 
-    if (path === 'form.status' && value === 'success') {
-      input.classList.remove('is-invalid');
-      feedback.textContent = '';
-      form.reset();
-      input.focus();
+    if (path === 'form.url') {
+      document.querySelector('.rss-input').value = value;
     }
   });
-};
+}
