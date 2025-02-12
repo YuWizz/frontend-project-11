@@ -1,13 +1,12 @@
+import { fetchRSSFeed } from './fetchFeed.js';
 import { createValidationSchema } from './validation.js';
 import initView from './view.js';
 
 export default function initRSSForm({ form, input, onAddFeed }) {
   const state = {
-    form: {
-      url: '',
-      errorCode: null,
-    },
+    form: { url: '', error: null },
     feeds: [],
+    posts: [],
   };
 
   const watchedState = initView(state);
@@ -18,19 +17,23 @@ export default function initRSSForm({ form, input, onAddFeed }) {
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    const url = state.form.url.trim();
 
-    const schema = createValidationSchema(state.feeds);
+    const schema = createValidationSchema(state.feeds.map(feed => feed.url));
 
     try {
-      await schema.validate({ url: state.form.url });
+      await schema.validate({ url });
 
-      state.feeds = [...state.feeds, state.form.url];
-      onAddFeed(state.form.url);
+      const { feed, posts } = await fetchRSSFeed(url);
 
+      state.feeds = [...state.feeds, { ...feed, url }];
+      state.posts = [...state.posts, ...posts];
+
+      onAddFeed(url);
       watchedState.form.url = '';
       watchedState.form.error = null;
     } catch (error) {
-        watchedState.form.errorCode = error.message.key;
+      watchedState.form.error = error.message?.key || 'errors.unknown';
     }
   });
 }

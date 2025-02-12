@@ -1,11 +1,15 @@
 import * as yup from 'yup';
 
-export const createValidationSchema = (existingFeeds) => {
+export const createValidationSchema = (existingUrls) => {
   return yup.object({
     url: yup
       .string()
-      .url()
-      .required()
-      .test('is-unique', { key: 'errors.duplicate' }, async (value) => !existingFeeds.includes(value)),
+      .url('errors.invalidUrl')
+      .required('errors.required')
+      .test(
+        'is-unique',
+        () => ({ key: 'errors.duplicate' }),
+        async (value) => !existingUrls.includes(value)
+      ),
   });
 };

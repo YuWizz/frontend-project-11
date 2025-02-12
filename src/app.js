@@ -14,7 +14,7 @@ function app() {
       form,
       input,
       onAddFeed: (url) => {
-        console.log('Добавлен RSS:', url);
+        console.log('Added RSS:', url);
       },
     });
   });
