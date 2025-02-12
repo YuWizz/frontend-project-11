@@ -1,5 +1,5 @@
 import onChange from 'on-change';
-import i18next from './localization.js';
+import i18next from './locales/localization.js';
 
 const createFeedElement = (feed) => {
   const feedContainer = document.createElement('div');
