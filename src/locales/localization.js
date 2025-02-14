@@ -7,13 +7,23 @@ i18next.init({
     ru: {
       translation: {
         errors: {
-          invalidUrl: 'Ссылка должна быть валидным URL',
-          required: 'Заполните это поле',
-          duplicate: 'Такой RSS уже добавлен',
+          notUrl: 'Ссылка должна быть валидным URL',
+          alreadyInList: 'RSS уже существует',
+          notRss: 'Ресурс не содержит валидный RSS',
+          networkError: 'Ошибка сети',
+          unknown: 'Что-то пошло не так',
+          empty: 'Не должно быть пустым',
         },
-        form: {
-          placeholder: 'Введите URL RSS',
-          submit: 'Добавить',
+        status: {
+          sending: 'RSS загружается',
+          success: 'RSS успешно загружен',
+        },
+        items: {
+          feeds: 'Фиды',
+          posts: 'Посты',
+        },
+        buttons: {
+          view: 'Просмотр',
         },
       },
     },

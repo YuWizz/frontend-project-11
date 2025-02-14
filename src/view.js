@@ -1,5 +1,6 @@
 import onChange from 'on-change';
 import i18next from './locales/localization.js';
+import 'bootstrap';
 
 const createFeedElement = (feed) => {
   const feedContainer = document.createElement('div');
@@ -15,20 +16,39 @@ const createFeedElement = (feed) => {
   return feedContainer;
 };
 
-const createPostList = (posts) => {
+const createPostList = (posts, state) => {
   const ul = document.createElement('ul');
-  ul.classList.add('posts', 'list-group');
+  ul.classList.add('list-group');
 
-  posts.forEach(({ title, link }) => {
+  posts.forEach(({ id, title, link, description }) => {
     const li = document.createElement('li');
-    li.classList.add('list-group-item');
+    li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
 
     const a = document.createElement('a');
     a.href = link;
     a.textContent = title;
     a.target = '_blank';
+    a.classList.add(state.viewedPosts.has(id) ? 'fw-normal' : 'fw-bold');
 
-    li.append(a);
+    const previewButton = document.createElement('button');
+    previewButton.textContent = 'view';
+    previewButton.classList.add('btn', 'btn-primary', 'btn-sm', 'ms-3');
+    previewButton.dataset.id = id;
+    previewButton.dataset.bsToggle = 'modal';
+    previewButton.dataset.bsTarget = '#postModal';
+
+    previewButton.addEventListener('click', () => {
+      state.viewedPosts.add(id);
+      a.classList.remove('fw-bold');
+      a.classList.add('fw-normal');
+
+      const modalTitle = document.getElementById('postModalLabel');
+      const modalBody = document.getElementById('postModalBody');
+      modalTitle.textContent = title;
+      modalBody.textContent = description;
+    });
+
+    li.append(a, previewButton);
     ul.append(li);
   });
 

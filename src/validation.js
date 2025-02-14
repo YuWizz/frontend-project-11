@@ -1,6 +1,6 @@
 import * as yup from 'yup';
 
-export const createValidationSchema = (existingUrls) => {
+export const createValidationSchema = (fetchExistingUrls) => {
   return yup.object({
     url: yup
       .string()
@@ -9,7 +9,8 @@ export const createValidationSchema = (existingUrls) => {
       .test(
         'is-unique',
         () => ({ key: 'errors.duplicate' }),
-        async (value) => !existingUrls.includes(value)
+        (value) =>
+          fetchExistingUrls().then((existingUrls) => !existingUrls.includes(value))
       ),
   });
 };

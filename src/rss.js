@@ -7,6 +7,7 @@ export default function initRSSForm({ form, input, onAddFeed }) {
     form: { url: '', error: null },
     feeds: [],
     posts: [],
+    viewedPosts: new Set(),
   };
 
   const watchedState = initView(state);
@@ -33,7 +34,30 @@ export default function initRSSForm({ form, input, onAddFeed }) {
       watchedState.form.url = '';
       watchedState.form.error = null;
     } catch (error) {
-      watchedState.form.error = error.message?.key || 'errors.unknown';
+      watchedState.form.error = error.message || 'errors.unknown';
     }
   });
+
+  const updateFeeds = async () => {
+    const allFeedRequests = state.feeds.map(async (feed) => {
+      try {
+        const { posts: newPosts } = await fetchRSSFeed(feed.url);
+        const existingPostLinks = new Set(state.posts.map(post => post.link));
+
+        const uniquePosts = newPosts.filter(post => !existingPostLinks.has(post.link));
+
+        if (uniquePosts.length > 0) {
+          state.posts = [...uniquePosts, ...state.posts];
+        }
+      } catch (error) {
+        console.error(`Error update: ${feed.url}`, error);
+      }
+    });
+
+    await Promise.all(allFeedRequests);
+
+    setTimeout(updateFeeds, 5000);
+  };
+
+  updateFeeds();
 }
