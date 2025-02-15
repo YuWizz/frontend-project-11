@@ -1,6 +1,5 @@
 import onChange from 'on-change';
 import i18next from './locales/localization.js';
-import 'bootstrap';
 
 const createFeedElement = (feed) => {
   const feedContainer = document.createElement('div');
@@ -35,17 +34,20 @@ const createPostList = (posts, state) => {
     previewButton.classList.add('btn', 'btn-primary', 'btn-sm', 'ms-3');
     previewButton.dataset.id = id;
     previewButton.dataset.bsToggle = 'modal';
-    previewButton.dataset.bsTarget = '#postModal';
+    previewButton.dataset.bsTarget = '#modal';
 
     previewButton.addEventListener('click', () => {
       state.viewedPosts.add(id);
       a.classList.remove('fw-bold');
       a.classList.add('fw-normal');
 
-      const modalTitle = document.getElementById('postModalLabel');
-      const modalBody = document.getElementById('postModalBody');
+      const modalTitle = document.querySelector('.modal-title');
+      const modalBody = document.querySelector('.modal-body');
+      const fullArticleLink = document.querySelector('.full-article');
+
       modalTitle.textContent = title;
       modalBody.textContent = description;
+      fullArticleLink.href = link;
     });
 
     li.append(a, previewButton);
