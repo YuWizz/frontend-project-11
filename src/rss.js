@@ -19,6 +19,7 @@ export default function initRSSForm({ form, input, onAddFeed }) {
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const url = state.form.url.trim();
+    if (!url) return;
 
     const schema = createValidationSchema(state.feeds.map(feed => feed.url));
 
