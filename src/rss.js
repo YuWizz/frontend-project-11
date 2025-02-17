@@ -33,6 +33,7 @@ export default function initRSSForm({ form, input, onAddFeed }) {
 
       onAddFeed(url);
       watchedState.form.url = '';
+      input.value = '';
       watchedState.form.error = null;
     } catch (error) {
       watchedState.form.error = error.message || 'errors.unknown';
@@ -40,6 +41,8 @@ export default function initRSSForm({ form, input, onAddFeed }) {
   });
 
   const updateFeeds = async () => {
+    if (state.feeds.length === 0) return;
+    
     const allFeedRequests = state.feeds.map(async (feed) => {
       try {
         const { posts: newPosts } = await fetchRSSFeed(feed.url);
