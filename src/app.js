@@ -5,7 +5,7 @@ function app() {
   document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('.rss-form');
     const input = form.querySelector('.rss-input');
-    const submitButton = form.querySelector('button[type="submit"]');
+    const submitButton = form.querySelector('button[aria-label="add"]');
 
     input.placeholder = i18next.t('form.placeholder');
     submitButton.textContent = i18next.t('form.submit');
@@ -14,7 +14,7 @@ function app() {
       form,
       input,
       onAddFeed: (url) => {
-        console.log('Added RSS:', url);
+        console.log('Добавить:', url);
       },
     });
   });
