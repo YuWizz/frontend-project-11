@@ -86,4 +86,4 @@ export default function initView(state) {
       postsContainer.append(createPostList(value));
     }
   });
-}
+};

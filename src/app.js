@@ -1,8 +1,9 @@
 import * as yup from 'yup';
-import i18next from './locales/localization.js';
+import i18next from 'i18next';
 import axios from 'axios';
 import initView from './view.js';
 import parseRSS from './parseRSS.js';
+import resources from './locales/index.js';
 
 const fetchRSSFeed = (url) => {
   const proxyUrl = new URL('/get', 'https://allorigins.hexlet.app');
@@ -31,13 +32,30 @@ const createValidationSchema = (existingUrls) =>
       .notOneOf(existingUrls, 'errors.duplicate'),
   });
 
-function app() {
+async function app() {
+  const i18nextInstance = i18next.createInstance();
+  await i18nextInstance.init({
+    lng: 'ru',
+    debug: false,
+    resources,
+  });
+
+  yup.setLocale({
+    mixed: {
+      required: () => i18nextInstance.t('errors.required'),
+      notOneOf: () => i18nextInstance.t('errors.duplicate'),
+    },
+    string: {
+      url: () => i18nextInstance.t('errors.invalidUrl'),
+    },
+  });
+
   const form = document.querySelector('.rss-form');
   const input = form.querySelector('.rss-input');
   const submitButton = form.querySelector('button[aria-label="add"]');
 
-  input.placeholder = i18next.t('form.placeholder');
-  submitButton.textContent = i18next.t('form.submit');
+  input.placeholder = i18nextInstance.t('form.placeholder');
+  submitButton.textContent = i18nextInstance.t('form.submit');
 
   const state = {
     form: { url: '', error: null },
@@ -69,7 +87,7 @@ function app() {
       input.value = '';
       watchedState.form.error = null;
     } catch (error) {
-      watchedState.form.error = i18next.t(error.errors?.[0] || 'errors.unknown');
+      watchedState.form.error = i18nextInstance.t(error.errors?.[0] || 'errors.unknown');
     }
   });
 
