@@ -52,13 +52,9 @@ async function app() {
 
   const form = document.querySelector('.rss-form');
   const input = form.querySelector('.rss-input');
-  const submitButton = form.querySelector('button[aria-label="add"]');
-
-  input.placeholder = i18nextInstance.t('form.placeholder');
-  submitButton.textContent = i18nextInstance.t('form.submit');
 
   const state = {
-    form: { url: '', error: null },
+    form: { error: null },
     feeds: [],
     posts: [],
     viewedPosts: new Set(),
@@ -66,13 +62,9 @@ async function app() {
 
   const watchedState = initView(state);
 
-  input.addEventListener('input', (event) => {
-    watchedState.form.url = event.target.value;
-  });
-
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const url = state.form.url.trim();
+    const url = input.value.trim();;
     if (!url) return;
 
     try {
@@ -83,7 +75,6 @@ async function app() {
       state.feeds = [...state.feeds, { ...feed, url }];
       state.posts = [...state.posts, ...posts];
 
-      watchedState.form.url = '';
       input.value = '';
       watchedState.form.error = null;
     } catch (error) {
