@@ -64,7 +64,7 @@ export default function initView(state) {
 
       if (value) {
         input.classList.add('is-invalid');
-        errorMessage.textContent = i18next.t(value);
+        errorMessage.textContent = i18nextInstance.t(value);
         errorMessage.classList.add('invalid-feedback');
       } else {
         input.classList.remove('is-invalid');

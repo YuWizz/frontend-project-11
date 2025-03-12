@@ -23,15 +23,6 @@ const fetchRSSFeed = (url) => {
   }
 };
 
-const createValidationSchema = (existingUrls) =>
-  yup.object({
-    url: yup
-      .string()
-      .url('errors.invalidUrl')
-      .required('errors.required')
-      .notOneOf(existingUrls, 'errors.duplicate'),
-  });
-
 async function app() {
   const i18nextInstance = i18next.createInstance();
   await i18nextInstance.init({
@@ -42,16 +33,15 @@ async function app() {
 
   yup.setLocale({
     mixed: {
-      required: () => i18nextInstance.t('errors.required'),
-      notOneOf: () => i18nextInstance.t('errors.duplicate'),
+      required: 'errors.required',
+      notOneOf: 'errors.duplicate',
     },
     string: {
-      url: () => i18nextInstance.t('errors.invalidUrl'),
+      url: 'errors.invalidUrl',
     },
   });
 
   const form = document.querySelector('.rss-form');
-  const input = form.querySelector('.rss-input');
 
   const state = {
     form: { error: null },
@@ -60,25 +50,33 @@ async function app() {
     viewedPosts: new Set(),
   };
 
-  const watchedState = initView(state);
+  const watchedState = initView(state, i18nextInstance);
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const url = input.value.trim();;
+    const formData = new FormData(event.target);
+    const url = formData.get('url').trim();
     if (!url) return;
 
+    const validationSchema = yup.object({
+      url: yup
+        .string()
+        .url()
+        .required()
+        .notOneOf(state.feeds.map((feed) => feed.url)),
+    });
+
     try {
-      await createValidationSchema(state.feeds.map((feed) => feed.url)).validate({ url });
+      await validationSchema.validate({ url });
 
       const { feed, posts } = await fetchRSSFeed(url);
 
       state.feeds = [...state.feeds, { ...feed, url }];
       state.posts = [...state.posts, ...posts];
 
-      input.value = '';
       watchedState.form.error = null;
     } catch (error) {
-      watchedState.form.error = i18nextInstance.t(error.errors?.[0] || 'errors.unknown');
+      watchedState.form.error = error.errors?.[0] || 'errors.unknown';
     }
   });
 
