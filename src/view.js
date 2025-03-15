@@ -18,7 +18,9 @@ const createPostList = (posts, state) => {
   const ul = document.createElement('ul');
   ul.classList.add('list-group');
 
-  posts.forEach(({ id, title, link, description }) => {
+  posts.forEach(({
+    id, title, link, description,
+  }) => {
     const li = document.createElement('li');
     li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
 
@@ -56,7 +58,7 @@ const createPostList = (posts, state) => {
   return ul;
 };
 
-export default function initView(state) {
+export default function initView(state, i18nextInstance) {
   return onChange(state, (path, value) => {
     if (path === 'form.error') {
       const input = document.querySelector('.rss-input');
@@ -85,4 +87,4 @@ export default function initView(state) {
       postsContainer.append(createPostList(value));
     }
   });
-};
+}
