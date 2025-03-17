@@ -19,91 +19,89 @@ const fetchRSSFeed = (url) => {
         throw new Error('errors.network');
       });
   } catch (error) {
-    throw new Error('errors.network');
+    return Promise.reject(new Error('errors.network'));
   }
 };
 
-async function app() {
+function app() {
   const i18nextInstance = i18next.createInstance();
-  await i18nextInstance.init({
+
+  i18nextInstance.init({
     lng: 'ru',
     debug: false,
     resources,
-  });
-
-  yup.setLocale({
-    mixed: {
-      required: 'errors.required',
-      notOneOf: 'errors.duplicate',
-    },
-    string: {
-      url: 'errors.invalidUrl',
-    },
-  });
-
-  const form = document.querySelector('.rss-form');
-
-  const state = {
-    form: { error: null },
-    feeds: [],
-    posts: [],
-    viewedPosts: new Set(),
-  };
-
-  const watchedState = initView(state, i18nextInstance);
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const url = formData.get('url').trim();
-    if (!url) return;
-
-    const validationSchema = yup.object({
-      url: yup
-        .string()
-        .url()
-        .required()
-        .notOneOf(state.feeds.map((feed) => feed.url)),
+  }).then(() => {
+    yup.setLocale({
+      mixed: {
+        required: 'errors.required',
+        notOneOf: 'errors.duplicate',
+      },
+      string: {
+        url: 'errors.invalidUrl',
+      },
     });
 
-    try {
-      await validationSchema.validate({ url });
+    const form = document.querySelector('.rss-form');
 
-      const { feed, posts } = await fetchRSSFeed(url);
+    const state = {
+      form: { error: null },
+      feeds: [],
+      posts: [],
+      viewedPosts: new Set(),
+    };
 
-      state.feeds = [...state.feeds, { ...feed, url }];
-      state.posts = [...state.posts, ...posts];
+    const watchedState = initView(state, i18nextInstance);
 
-      watchedState.form.error = null;
-    } catch (error) {
-      watchedState.form.error = error.errors?.[0] || 'errors.unknown';
-    }
-  });
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const url = formData.get('url').trim();
+      if (!url) return;
 
-  const updateFeeds = async () => {
-    if (state.feeds.length === 0) return;
+      const validationSchema = yup.object({
+        url: yup
+          .string()
+          .url()
+          .required()
+          .notOneOf(state.feeds.map((feed) => feed.url)),
+      });
 
-    const allFeedRequests = state.feeds.map(async (feed) => {
-      try {
-        const { posts: newPosts } = await fetchRSSFeed(feed.url);
-        const existingPostLinks = new Set(state.posts.map((post) => post.link));
-
-        const uniquePosts = newPosts.filter((post) => !existingPostLinks.has(post.link));
-
-        if (uniquePosts.length > 0) {
-          state.posts = [...uniquePosts, ...state.posts];
-        }
-      } catch (error) {
-        console.error(`Error update: ${feed.url}`, error);
-      }
+      validationSchema.validate({ url })
+        .then(() => fetchRSSFeed(url))
+        .then(({ feed, posts }) => {
+          state.feeds = [...state.feeds, { ...feed, url }];
+          state.posts = [...state.posts, ...posts];
+          watchedState.form.error = null;
+        })
+        .catch((error) => {
+          watchedState.form.error = error.errors?.[0] || 'errors.unknown';
+        });
     });
 
-    await Promise.all(allFeedRequests);
+    const updateFeeds = () => {
+      if (state.feeds.length === 0) return;
 
-    setTimeout(updateFeeds, 5000);
-  };
+      const allFeedRequests = state.feeds.map((feed) => fetchRSSFeed(feed.url)
+        .then(({ posts: newPosts }) => {
+          const existingPostLinks = new Set(state.posts.map((post) => post.link));
+          const uniquePosts = newPosts.filter((post) => !existingPostLinks.has(post.link));
 
-  updateFeeds();
+          if (uniquePosts.length > 0) {
+            state.posts = [...uniquePosts, ...state.posts];
+          }
+        })
+        .catch((error) => {
+          console.error(`Error update: ${feed.url}`, error);
+        }));
+
+      Promise.all(allFeedRequests)
+        .finally(() => setTimeout(updateFeeds, 5000));
+    };
+
+    updateFeeds();
+  }).catch((error) => {
+    console.error('i18next init error:', error);
+  });
 }
 
 export default app;
