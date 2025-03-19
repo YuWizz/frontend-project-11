@@ -1,26 +1,31 @@
 import * as yup from 'yup';
 import i18next from 'i18next';
 import axios from 'axios';
+import { uniqueId } from 'lodash';
 import initView from './view.js';
 import parseRSS from './parseRSS.js';
 import resources from './locales/index.js';
 
 const fetchRSSFeed = (url) => {
   const proxyUrl = new URL('/get', 'https://allorigins.hexlet.app');
-  try {
-    const proxyWithParams = new URL(proxyUrl);
-    proxyWithParams.searchParams.set('url', url);
+  const proxyWithParams = new URL(proxyUrl);
+  proxyWithParams.searchParams.set('url', url);
 
-    return axios
-      .get(proxyWithParams.toString())
-      .then((response) => parseRSS(response.data.contents))
-      .catch((error) => {
-        console.error('Network error:', error);
-        throw new Error('errors.network');
-      });
-  } catch (error) {
-    return Promise.reject(new Error('errors.network'));
-  }
+  return axios
+    .get(proxyWithParams.toString())
+    .then((response) => {
+      const { feed, posts } = parseRSS(response.data.contents);
+      const feedId = uniqueId('feed_');
+
+      return {
+        feed: { ...feed, id: feedId, url },
+        posts: posts.map((post) => ({ ...post, id: uniqueId('post_'), feedId })),
+      };
+    })
+    .catch((error) => {
+      console.error('Network error:', error);
+      throw new Error('errors.network');
+    });
 };
 
 function app() {
@@ -56,7 +61,6 @@ function app() {
       event.preventDefault();
       const formData = new FormData(event.target);
       const url = formData.get('url').trim();
-      if (!url) return;
 
       const validationSchema = yup.object({
         url: yup
@@ -69,12 +73,18 @@ function app() {
       validationSchema.validate({ url })
         .then(() => fetchRSSFeed(url))
         .then(({ feed, posts }) => {
-          state.feeds = [...state.feeds, { ...feed, url }];
+          state.feeds = [...state.feeds, feed];
           state.posts = [...state.posts, ...posts];
           watchedState.form.error = null;
         })
-        .catch((error) => {
-          watchedState.form.error = error.errors?.[0] || 'errors.unknown';
+        .catch((validationError) => {
+          if (validationError.name === 'ValidationError') {
+            const [errorMessage] = validationError.errors;
+            watchedState.form.error = errorMessage;
+          } else {
+            console.error('RSS fetch error:', validationError);
+            watchedState.form.error = 'errors.network';
+          }
         });
     });
 
