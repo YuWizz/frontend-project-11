@@ -37,4 +37,9 @@ export default {
   output: {
     clean: true,
   },
+  devServer: {
+    client: {
+      overlay: false,
+    },
+  },
 };
