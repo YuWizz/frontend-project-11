@@ -61,8 +61,13 @@ const createPostList = (posts, state) => {
 export default function initView(state, i18nextInstance) {
   return onChange(state, (path, value) => {
     if (path === 'form.error') {
-      const input = document.querySelector('.rss-input');
+      const input = document.querySelector('#url-input');
       const errorMessage = document.querySelector('.error-message');
+
+      if (!input || !errorMessage) {
+        console.error('Error: element is not found');
+        return;
+      }
 
       if (value) {
         input.classList.add('is-invalid');
