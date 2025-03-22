@@ -73,6 +73,7 @@ function app() {
       validationSchema.validate({ url })
         .then(() => fetchRSSFeed(url))
         .then(({ feed, posts }) => {
+          console.log('Feed added:', feed);
           state.feeds = [...state.feeds, feed];
           state.posts = [...state.posts, ...posts];
           watchedState.form.error = null;

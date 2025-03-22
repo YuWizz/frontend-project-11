@@ -1,5 +1,6 @@
 const parseRSS = (rssText) => {
   const parser = new DOMParser();
+  console.log('Raw RSS response:', rssText);
   const xmlDoc = parser.parseFromString(rssText, 'application/xml');
 
   if (xmlDoc.querySelector('parsererror')) {
@@ -12,6 +13,7 @@ const parseRSS = (rssText) => {
   const posts = [...xmlDoc.querySelectorAll('item')].map((item) => ({
     title: item.querySelector('title')?.textContent.trim() || '',
     link: item.querySelector('link')?.textContent.trim() || '',
+    description: item.querySelector('description')?.textContent.trim() || '',
   }));
 
   return { feed: { title, description }, posts };
