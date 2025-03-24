@@ -66,11 +66,12 @@ const createPostList = (posts, state) => {
 export default function initView(state, i18nextInstance) {
   return onChange(state, (path, value) => {
     if (path === 'form.error') {
+      console.log('State form.error changed:', value);
       const input = document.querySelector('#url-input');
       const errorMessage = document.querySelector('.feedback');
 
       if (!input || !errorMessage) {
-        console.error('Error: element is not found');
+        console.error('Error: element not found');
         return;
       }
 

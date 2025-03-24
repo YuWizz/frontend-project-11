@@ -80,9 +80,9 @@ function app() {
           console.log('Feed added:', feed);
           state.feeds = [...state.feeds, feed];
           state.posts = [...state.posts, ...posts];
-          console.log('Form error before reset:', watchedState.form.error);
+          console.log('Updated state.feeds:', state.feeds);
           watchedState.form.error = null;
-          console.log('Form error after reset:', watchedState.form.error);
+          console.log('Form error reset:', watchedState.form.error);
         })
         .catch((validationError) => {
           if (validationError.name === 'ValidationError') {
