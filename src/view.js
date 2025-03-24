@@ -87,19 +87,6 @@ export default function initView(state, i18nextInstance) {
     }
 
     if (path === 'feeds') {
-      console.log('State updated: feeds added');
-    
-      const successMessage = document.querySelector('.feedback');
-      if (successMessage) {
-        successMessage.textContent = 'RSS успешно загружен';
-        successMessage.classList.remove('text-danger');
-        successMessage.classList.add('text-success');
-      } else {
-        console.error('Error: .feedback element not found');
-      }
-    }
-
-    if (path === 'feeds') {
       const feedsContainer = document.querySelector('.feeds');
       feedsContainer.innerHTML = '';
       value.forEach((feed) => feedsContainer.append(createFeedElement(feed)));
