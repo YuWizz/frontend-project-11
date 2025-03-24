@@ -10,10 +10,14 @@ const fetchRSSFeed = (url) => {
   const proxyUrl = new URL('/get', 'https://allorigins.hexlet.app');
   const proxyWithParams = new URL(proxyUrl);
   proxyWithParams.searchParams.set('url', url);
+  proxyWithParams.searchParams.set('disableCache', 'true');
+
+  console.log('Fetching RSS from:', proxyWithParams.toString());
 
   return axios
     .get(proxyWithParams.toString())
     .then((response) => {
+      console.log('Fetched RSS response:', response.data);
       const { feed, posts } = parseRSS(response.data.contents);
       const feedId = uniqueId('feed_');
 
@@ -76,7 +80,9 @@ function app() {
           console.log('Feed added:', feed);
           state.feeds = [...state.feeds, feed];
           state.posts = [...state.posts, ...posts];
+          console.log('Form error before reset:', watchedState.form.error);
           watchedState.form.error = null;
+          console.log('Form error after reset:', watchedState.form.error);
         })
         .catch((validationError) => {
           if (validationError.name === 'ValidationError') {
