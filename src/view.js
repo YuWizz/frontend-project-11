@@ -46,8 +46,13 @@ const createPostList = (posts, state) => {
       const modalBody = document.querySelector('.modal-body');
       const fullArticleLink = document.querySelector('.full-article');
 
+      if (!modalTitle || !modalBody || !fullArticleLink) {
+        console.error('Error: modal window elements not found');
+        return;
+      }
+
       modalTitle.textContent = title;
-      modalBody.textContent = description;
+      modalBody.textContent = description || 'No description';
       fullArticleLink.href = link;
     });
 
@@ -62,7 +67,7 @@ export default function initView(state, i18nextInstance) {
   return onChange(state, (path, value) => {
     if (path === 'form.error') {
       const input = document.querySelector('#url-input');
-      const errorMessage = document.querySelector('.error-message');
+      const errorMessage = document.querySelector('.feedback');
 
       if (!input || !errorMessage) {
         console.error('Error: element is not found');
@@ -87,7 +92,7 @@ export default function initView(state, i18nextInstance) {
     }
 
     if (path === 'posts') {
-      const postsContainer = document.querySelector('.posts-container');
+      const postsContainer = document.querySelector('.posts');
       postsContainer.innerHTML = '';
       postsContainer.append(createPostList(value));
     }

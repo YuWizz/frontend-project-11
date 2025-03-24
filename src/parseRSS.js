@@ -13,7 +13,7 @@ const parseRSS = (rssText) => {
   const posts = [...xmlDoc.querySelectorAll('item')].map((item) => ({
     title: item.querySelector('title')?.textContent.trim() || '',
     link: item.querySelector('link')?.textContent.trim() || '',
-    description: item.querySelector('description')?.textContent.trim() || '',
+    description: item.querySelector('description')?.textContent.trim() || 'No description',
   }));
 
   return { feed: { title, description }, posts };
