@@ -90,9 +90,9 @@ export default function initView(state, i18nextInstance) {
       const feedbackContainer = document.querySelector('.feedback');
 
       if (feedbackContainer) {
-          feedbackContainer.textContent = i18nextInstance.t('rss.success');
-          feedbackContainer.classList.remove('text-danger');
-          feedbackContainer.classList.add('text-success');
+        feedbackContainer.textContent = i18nextInstance.t('status.success');
+        feedbackContainer.classList.remove('text-danger');
+        feedbackContainer.classList.add('text-success');
       }
 
       const feedsContainer = document.querySelector('.feeds');
