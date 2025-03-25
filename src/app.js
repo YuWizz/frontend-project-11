@@ -28,7 +28,7 @@ const fetchRSSFeed = (url) => {
     })
     .catch((error) => {
       console.error('Network error:', error);
-      throw new Error('errors.network');
+      throw new Error('errors.networkError');
     });
 };
 
@@ -42,11 +42,11 @@ function app() {
   }).then(() => {
     yup.setLocale({
       mixed: {
-        required: 'errors.required',
-        notOneOf: 'errors.duplicate',
+        required: 'errors.empty',
+        notOneOf: 'errors.alreadyInList',
       },
       string: {
-        url: 'errors.invalidUrl',
+        url: 'errors.notUrl',
       },
     });
 
@@ -90,7 +90,7 @@ function app() {
             watchedState.form.error = errorMessage;
           } else {
             console.error('RSS fetch error:', validationError);
-            watchedState.form.error = 'errors.network';
+            watchedState.form.error = 'errors.networkError';
           }
         });
     });

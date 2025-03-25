@@ -83,6 +83,7 @@ export default function initView(state, i18nextInstance) {
         input.classList.remove('is-invalid');
         errorMessage.textContent = '';
         errorMessage.classList.remove('invalid-feedback');
+        input.value = '';
       }
     }
 
