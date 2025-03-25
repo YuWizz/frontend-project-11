@@ -83,6 +83,10 @@ function app() {
           console.log('Updated state.feeds:', state.feeds);
           watchedState.form.error = null;
           console.log('Form error reset:', watchedState.form.error);
+
+          const input = document.querySelector('#url-input');
+          input.value = '';
+          input.focus();
         })
         .catch((validationError) => {
           if (validationError.name === 'ValidationError') {
