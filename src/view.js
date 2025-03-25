@@ -95,7 +95,7 @@ export default function initView(state, i18nextInstance) {
     if (path === 'posts') {
       const postsContainer = document.querySelector('.posts');
       postsContainer.innerHTML = '';
-      postsContainer.append(createPostList(value));
+      postsContainer.append(createPostList(value, state));
     }
   });
 }

@@ -78,8 +78,8 @@ function app() {
         .then(() => fetchRSSFeed(url))
         .then(({ feed, posts }) => {
           console.log('Feed added:', feed);
-          state.feeds = [...state.feeds, feed];
-          state.posts = [...state.posts, ...posts];
+          watchedState.feeds = [...state.feeds, feed];
+          watchedState.posts = [...state.posts, ...posts];
           console.log('Updated state.feeds:', state.feeds);
           watchedState.form.error = null;
           console.log('Form error reset:', watchedState.form.error);
@@ -104,7 +104,7 @@ function app() {
           const uniquePosts = newPosts.filter((post) => !existingPostLinks.has(post.link));
 
           if (uniquePosts.length > 0) {
-            state.posts = [...uniquePosts, ...state.posts];
+            watchedState.posts = [...uniquePosts, ...state.posts];
           }
         })
         .catch((error) => {
