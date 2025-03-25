@@ -87,6 +87,14 @@ export default function initView(state, i18nextInstance) {
     }
 
     if (path === 'feeds') {
+      const feedbackContainer = document.querySelector('.feedback');
+
+      if (feedbackContainer) {
+          feedbackContainer.textContent = i18nextInstance.t('rss.success');
+          feedbackContainer.classList.remove('text-danger');
+          feedbackContainer.classList.add('text-success');
+      }
+
       const feedsContainer = document.querySelector('.feeds');
       feedsContainer.innerHTML = '';
       value.forEach((feed) => feedsContainer.append(createFeedElement(feed)));
