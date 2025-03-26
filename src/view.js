@@ -32,7 +32,7 @@ const createPostList = (posts, state) => {
 
     const previewButton = document.createElement('button');
     previewButton.textContent = i18nextInstance.t('buttons.view');
-    previewButton.classList.add('btn', 'btn-primary', 'btn-sm');
+    previewButton.classList.add('btn', 'btn-primary', 'btn-sm', 'ms-3');
     previewButton.dataset.id = id;
     previewButton.dataset.bsToggle = 'modal';
     previewButton.dataset.bsTarget = '#modal';
