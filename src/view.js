@@ -14,7 +14,7 @@ const createFeedElement = (feed) => {
   return feedContainer;
 };
 
-const createPostList = (posts, state) => {
+const createPostList = (posts, state, i18nextInstance) => {
   const ul = document.createElement('ul');
   ul.classList.add('list-group');
 
@@ -31,7 +31,7 @@ const createPostList = (posts, state) => {
     a.classList.add(state.viewedPosts.has(id) ? 'fw-normal' : 'fw-bold');
 
     const previewButton = document.createElement('button');
-    previewButton.textContent = 'view';
+    previewButton.textContent = i18nextInstance.t('buttons.view');
     previewButton.classList.add('btn', 'btn-primary', 'btn-sm', 'ms-3');
     previewButton.dataset.id = id;
     previewButton.dataset.bsToggle = 'modal';
@@ -104,7 +104,7 @@ export default function initView(state, i18nextInstance) {
     if (path === 'posts') {
       const postsContainer = document.querySelector('.posts');
       postsContainer.innerHTML = '';
-      postsContainer.append(createPostList(value, state));
+      postsContainer.append(createPostList(value, state, i18nextInstance));
     }
   });
 }
