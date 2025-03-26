@@ -85,8 +85,12 @@ function app() {
           console.log('Form error reset:', watchedState.form.error);
 
           const input = document.querySelector('#url-input');
-          input.value = '';
-          input.focus();
+          if (input) {
+            input.value = '';
+            input.focus();
+            input.classList.remove('is-invalid');
+            console.log('Input cleared and focused');
+          }
         })
         .catch((validationError) => {
           if (validationError.name === 'ValidationError') {
