@@ -31,7 +31,7 @@ const createPostList = (posts, state) => {
     a.classList.add(state.viewedPosts.has(id) ? 'fw-normal' : 'fw-bold');
 
     const previewButton = document.createElement('button');
-    previewButton.textContent = i18nextInstance.t('buttons.view');;
+    previewButton.textContent = 'buttons.view';
     previewButton.classList.add('btn', 'btn-primary', 'btn-sm', 'ms-3');
     previewButton.dataset.id = id;
     previewButton.dataset.bsToggle = 'modal';
@@ -97,13 +97,13 @@ export default function initView(state, i18nextInstance) {
       }
 
       const feedsContainer = document.querySelector('.feeds');
-      feedsContainer.innerHTML = `<h2>${i18nextInstance.t('items.feeds')}</h2>`;
+      feedsContainer.innerHTML = '';
       value.forEach((feed) => feedsContainer.append(createFeedElement(feed)));
     }
 
     if (path === 'posts') {
       const postsContainer = document.querySelector('.posts');
-      postsContainer.innerHTML = `<h2>${i18nextInstance.t('items.posts')}</h2>`;
+      postsContainer.innerHTML = '';
       postsContainer.append(createPostList(value, state));
     }
   });
