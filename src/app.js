@@ -17,18 +17,61 @@ const fetchRSSFeed = (url) => {
   return axios
     .get(proxyWithParams.toString())
     .then((response) => {
-      console.log('Fetched RSS response:', response.data);
-      const { feed, posts } = parseRSS(response.data.contents);
-      const feedId = uniqueId('feed_');
+      if (!response.data || !response.data.contents) {
+        console.error('Invalid response structure from proxy:', response.data);
+        throw new Error('errors.networkError');
+      }
+      console.log('Fetched RSS response contents:', response.data.contents);
+      try {
+        const { feed, posts } = parseRSS(response.data.contents);
+        const feedId = uniqueId('feed_');
 
-      return {
-        feed: { ...feed, id: feedId, url },
-        posts: posts.map((post) => ({ ...post, id: uniqueId('post_'), feedId })),
-      };
+        return {
+          feed: { ...feed, id: feedId, url },
+          posts: posts.map((post) => ({ ...post, id: uniqueId('post_'), feedId })),
+        };
+      } catch (parseError) {
+        console.error('Parsing error:', parseError);
+        if (parseError.message === 'errors.notRss') {
+          throw parseError;
+        } else {
+          throw new Error('errors.notRss');
+        }
+      }
     })
     .catch((error) => {
-      console.error('Network error:', error);
+      console.error('Network or Parsing Error during fetch:', error);
+      if (['errors.networkError', 'errors.notRss'].includes(error.message)) {
+        throw error;
+      }
       throw new Error('errors.networkError');
+    });
+};
+
+const updateFeeds = (watchedState) => {
+  if (watchedState.feeds.length === 0) {
+    setTimeout(() => updateFeeds(watchedState), 5000);
+    return;
+  }
+
+  const promises = watchedState.feeds.map((feed) => fetchRSSFeed(feed.url)
+    .then(({ posts: newPosts }) => {
+      const existingPostLinks = new Set(watchedState.posts.map((post) => post.link));
+      const trulyNewPosts = newPosts
+        .filter((post) => !existingPostLinks.has(post.link))
+        .map((post) => ({ ...post, id: uniqueId('post_'), feedId: feed.id }));
+
+      if (trulyNewPosts.length > 0) {
+        watchedState.posts.unshift(...trulyNewPosts);
+      }
+    })
+    .catch((error) => {
+      console.error(`Error updating feed ${feed.url}:`, error);
+    }));
+
+  Promise.allSettled(promises)
+    .finally(() => {
+      setTimeout(() => updateFeeds(watchedState), 5000);
     });
 };
 
@@ -50,21 +93,38 @@ function app() {
       },
     });
 
-    const form = document.querySelector('.rss-form');
-
     const state = {
       form: { error: null },
+      loadingProcess: { status: 'idle', error: null },
       feeds: [],
       posts: [],
-      viewedPosts: new Set(),
+      uiState: { viewedPosts: new Set() },
+    };
+
+    const elements = {
+      form: document.querySelector('.rss-form'),
+      input: document.querySelector('#url-input'),
+      submitButton: document.querySelector('button[type="submit"]'),
+      feedback: document.querySelector('.feedback'),
+      feedsContainer: document.querySelector('.feeds'),
+      postsContainer: document.querySelector('.posts'),
+      modal: {
+        title: document.querySelector('.modal-title'),
+        body: document.querySelector('.modal-body'),
+        fullArticleLink: document.querySelector('.full-article'),
+      },
     };
 
     const watchedState = initView(state, i18nextInstance);
 
-    form.addEventListener('submit', (event) => {
+    elements.form.addEventListener('submit', (event) => {
       event.preventDefault();
       const formData = new FormData(event.target);
       const url = formData.get('url').trim();
+
+      watchedState.form.error = null;
+      watchedState.loadingProcess.error = null;
+      watchedState.loadingProcess.status = 'sending';
 
       const validationSchema = yup.object({
         url: yup
@@ -77,55 +137,57 @@ function app() {
       validationSchema.validate({ url })
         .then(() => fetchRSSFeed(url))
         .then(({ feed, posts }) => {
-          console.log('Feed added:', feed);
-          watchedState.feeds = [...state.feeds, feed];
-          watchedState.posts = [...state.posts, ...posts];
-          console.log('Updated state.feeds:', state.feeds);
-          watchedState.form.error = null;
-          console.log('Form error reset:', watchedState.form.error);
+          watchedState.feeds.push(feed);
+          watchedState.posts.unshift(...posts);
+          watchedState.loadingProcess.status = 'success';
 
-          const input = document.querySelector('#url-input');
-          if (input) {
-            input.value = '';
-            input.focus();
-            input.classList.remove('is-invalid');
-            console.log('Input cleared and focused');
+          if (elements.input) {
+            elements.input.value = '';
+            elements.input.focus();
           }
         })
-        .catch((validationError) => {
-          if (validationError.name === 'ValidationError') {
-            const [errorMessage] = validationError.errors;
-            watchedState.form.error = errorMessage;
+        .catch((error) => {
+          watchedState.loadingProcess.status = 'failed';
+
+          if (error instanceof yup.ValidationError) {
+            const [validationErrorKey] = error.errors;
+            watchedState.form.error = validationErrorKey;
+            watchedState.loadingProcess.error = null;
+          } else if (error.message && error.message.startsWith('errors.')) {
+            watchedState.loadingProcess.error = error.message;
+            watchedState.form.error = null;
           } else {
-            console.error('RSS fetch error:', validationError);
-            watchedState.form.error = 'errors.networkError';
+            console.error('Unknown error:', error);
+            watchedState.loadingProcess.error = 'errors.unknown';
+            watchedState.form.error = null;
           }
         });
     });
 
-    const updateFeeds = () => {
-      if (state.feeds.length === 0) return;
+    if (elements.postsContainer) {
+      elements.postsContainer.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-id]');
+        if (!button) return;
 
-      const allFeedRequests = state.feeds.map((feed) => fetchRSSFeed(feed.url)
-        .then(({ posts: newPosts }) => {
-          const existingPostLinks = new Set(state.posts.map((post) => post.link));
-          const uniquePosts = newPosts.filter((post) => !existingPostLinks.has(post.link));
+        const postId = button.dataset.id;
+        watchedState.uiState.viewedPosts.add(postId);
 
-          if (uniquePosts.length > 0) {
-            watchedState.posts = [...uniquePosts, ...state.posts];
-          }
-        })
-        .catch((error) => {
-          console.error(`Error update: ${feed.url}`, error);
-        }));
+        const post = watchedState.posts.find((p) => p.id === postId);
 
-      Promise.all(allFeedRequests)
-        .finally(() => setTimeout(updateFeeds, 5000));
-    };
+        if (!post) {
+          console.error(`Post with ID ${postId} not found in state.`);
+          return;
+        }
 
-    updateFeeds();
+        if (elements.modal.title) elements.modal.title.textContent = post.title;
+        if (elements.modal.body) elements.modal.body.textContent = post.description || '';
+        if (elements.modal.fullArticleLink) elements.modal.fullArticleLink.href = post.link;
+      });
+    }
+
+    setTimeout(() => updateFeeds(watchedState), 5000);
   }).catch((error) => {
-    console.error('i18next init error:', error);
+    console.error('i18next initialization failed:', error);
   });
 }
 
